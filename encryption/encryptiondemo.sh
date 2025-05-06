@@ -11,6 +11,7 @@ fi
 # Construct the URL for the specified Vault version
 VAULT_URL="https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip"
 
+# we user a fixed keyname
 KEYNAME="weka-key"
 
 # Directory to install Vault
