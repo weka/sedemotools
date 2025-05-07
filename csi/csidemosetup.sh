@@ -13,6 +13,8 @@ else
     echo "weka user login"
     exit 1
 fi
+# create WEKA CSI user
+weka user create wekacsi csi "CSIAdmin#"
 # update WEKA cert
 ./updatecert.sh
 # install git 
