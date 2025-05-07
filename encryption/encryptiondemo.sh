@@ -146,16 +146,19 @@ if [[ "$CONFIGURE_WEKA" == "y" || "$CONFIGURE_WEKA" == "Y" ]]; then
         # weka security kms set vault https://myvault.cse.local:8200 weka-key --role-id 79ab0f17-29af-5a14-cf7e-6e103a36bbdc --secret-id c058e2ac-01b2-7ec9-7c47-51f0d96dd586
         weka security kms set vault "$VAULT_ADDR" "$KEYNAME" --role-id  "$ROLE_ID" --secret-id  "$SECRET_ID"
 	echo "------------------------------------------------------------------"
+ 	echo "Output of:  weka security kms"
+  	echo ""
  	weka security kms
   	echo "------------------------------------------------------------------"
         "$INSTALL_DIR/vault" write -f auth/approle/role/weka-role-fs1 token_policies="weka" token_ttl=20m
         FS1ROLE=$("$INSTALL_DIR/vault" read -field=role_id auth/approle/role/weka-role-fs1/role-id)
         FS1SECRET=$("$INSTALL_DIR/vault" write -f -field=secret_id auth/approle/role/weka-role-fs1/secret-id)
         echo ""
-        echo "Here is a command to create an encrypted filesystem"
+        echo "Here is an additional role and secret to create an encrypted filesystem:"
         echo "FS1 role $FS1ROLE"
         echo "FS1 secret $FS1SECRET"
         echo "Example filesystem creation command:"
+	echo ""
         echo  "weka fs create test-encrypt default 1TiB --encrypted --kms-key-identifier weka-key --kms-role-id $FS1ROLE --kms-secret-id $FS1SECRET"
     fi
 fi
