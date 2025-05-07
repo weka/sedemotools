@@ -4,5 +4,6 @@ This is a repo of scripts to run quick demos of WEKA using a cloud deployed clus
 
 Clone this repo
 ```
+yum install git -y
 git clone https://github.com/weka/sedemotools
 ```

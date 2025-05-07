@@ -158,8 +158,13 @@ if [[ "$CONFIGURE_WEKA" == "y" || "$CONFIGURE_WEKA" == "Y" ]]; then
         echo "FS1 role $FS1ROLE"
         echo "FS1 secret $FS1SECRET"
         echo "Example filesystem creation command:"
-	echo ""
+	    echo ""
         echo  "weka fs create test-encrypt default 1TiB --encrypted --kms-key-identifier weka-key --kms-role-id $FS1ROLE --kms-secret-id $FS1SECRET"
+        echo ""
+        echo "You may need to shrink default filesystem first:"
+        echo "Shrinking the default FS"
+        echo "weka fs update default --ssd-capacity 100gb"
+        echo "weka fs update default --total-capacity 100gb"
     fi
 fi
 

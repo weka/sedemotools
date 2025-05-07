@@ -49,6 +49,19 @@ FILESYSTEM NAME  GROUP    AVAILABLE TOTAL  STATUS  ENCRYPTED
 testencryption   default  1.07 GB          READY   True
 ```
 
+### Using Vault to store a password
+Create a WEKA user and store and confirm the password in Vault.
+```
+weka user create mounttest regular "Password#"
+/root/vault-dirvault kv put secret/mounttest username="demo-user" password="Password#"
+/root/vault-dirvault kv get secret/mounttest
+```
+Now the user login can use this:
+```
+weka user login mounttest "$(/root/vault-dir/vault kv get -field=password secret/mounttest)"
+weka user whoami
+```
+
 Teardown:
 
 1. Delete any encrypted filesystem
