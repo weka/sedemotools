@@ -1,4 +1,6 @@
 #!/bin/bash
+# this script wil install all required files into Amazon Linux 2 to run a CSI demo
+# we need to be logged into WEKA
 if ! command -v weka >/dev/null 2>&1; then
     echo "WEKA client not found.  Please install WEKA client first"
     exit 1
@@ -13,10 +15,14 @@ else
     echo "weka user login"
     exit 1
 fi
-# create WEKA CSI user
+# we create WEKA CSI user as this is best practice
+echo "Creating a CSI user"
 weka user create wekacsi csi "CSIAdmin#"
+# the default fs steals all the space, so we shrink it
+echo "Shrinking the default FS"
 weka fs update default --ssd-capacity 100gb
 weka fs update default --total-capacity 100gb
+echo "Updating WEKA cert"
 # update WEKA cert
 ./updatecert.sh
 # install git 

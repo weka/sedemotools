@@ -116,7 +116,7 @@ read -p "Do you want to configure WEKA using the values above? (y/n): " CONFIGUR
 
 if [[ "$CONFIGURE_WEKA" == "y" || "$CONFIGURE_WEKA" == "Y" ]]; then  
     if ! command -v weka >/dev/null 2>&1; then
-        echo "Weka client not found"
+        echo "WEKA client not found"
         echo ""
         echo "Run this command when the client is ready and you are logged in" 
         echo ""
@@ -128,7 +128,7 @@ if [[ "$CONFIGURE_WEKA" == "y" || "$CONFIGURE_WEKA" == "Y" ]]; then
     if weka status >/dev/null 2>&1; then
         echo "User is logged into Weka"
     else
-        echo "User is not logged into Weka or there was an error"
+        echo "User is not logged into WEKA or there was an error"
         echo ""
         echo "Run this command when the client is ready and you are logged in"
         echo ""
@@ -141,7 +141,7 @@ if [[ "$CONFIGURE_WEKA" == "y" || "$CONFIGURE_WEKA" == "Y" ]]; then
         echo "Found an existing encrypted filesystem or configured KMS, quitting."
         exit 1
     else
-        echo "Configuring KMS in Weka..."
+        echo "Configuring KMS in WEKA..."
         # Here, Weka must support AppRole login. If not, you may need to first authenticate and pass the token.
         # weka security kms set vault https://myvault.cse.local:8200 weka-key --role-id 79ab0f17-29af-5a14-cf7e-6e103a36bbdc --secret-id c058e2ac-01b2-7ec9-7c47-51f0d96dd586
         weka security kms set vault "$VAULT_ADDR" "$KEYNAME" --role-id  "$ROLE_ID" --secret-id  "$SECRET_ID"
