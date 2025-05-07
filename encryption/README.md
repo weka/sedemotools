@@ -44,20 +44,22 @@ Auth method : RoleId/SecretId
 
 6. Show the encrypted filesystem:
 ```
-[root@weka72 tmp]# weka fs --output name,group,availableTotal,status,encrypted
+[root@weka72 tmp]# weka fs --output name,group,availableTotal,status,encrypted --filter encrypted=True
 FILESYSTEM NAME  GROUP    AVAILABLE TOTAL  STATUS  ENCRYPTED
-avfs             avgroup  1 TB             READY   False
-avfs2            avgroup  1 TB             READY   False
-.config_fs       default  122.00 GB        READY   False
-dbfs             dbGroup  500.00 GB        READY   False
 testencryption   default  1.07 GB          READY   True
 ```
 
 Teardown:
 
-1. Delete the encrypted filesystem
-2. Kill and delete the vault installation
-
+1. Delete any encrypted filesystem
+```
+weka fs delete test-encrypt -f
+```
+2. Reset the KMS:
+```
+weka security kms reset
+```
+3. Kill and delete the vault installation
 ```
 pkill -x vault
 rm -Rf $HOME/vault-dir
