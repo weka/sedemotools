@@ -27,8 +27,10 @@ kubectl get pv
 weka fs
 
 ### If clean up is needed
+```
 kubectl delete sc storageclass-wekafs-fs-api
 kubectl delete sc storageclass-wekafs-dir-api
 kubectl delete secret csi-wekafs-api-secret -n csi-wekafs
 kubectl delete pvc pvc-wekafs-dir -n csi-wekafs
 kubectl delete pvc pvc-wekafs-fs -n csi-wekafs
+```
