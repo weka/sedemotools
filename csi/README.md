@@ -20,11 +20,13 @@ ls -l /mnt/weka/csi-volumes/
 ````
 
 ### make a filesystem backed PV
+```
 kubectl apply -f pvc-wekafs-fs.yaml -n csi-wekafs
 kubectl get pvc -n csi-wekafs
 kubectl describe pvc -n csi-wekafs
 kubectl get pv
 weka fs
+```
 
 ### If clean up is needed
 ```
