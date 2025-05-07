@@ -34,9 +34,9 @@ KMS is not configured. Encrypted filesystems are supported with a local encrypti
 ```
 [root@weka72 tmp]# weka security kms
 Using an external Vault by HashiCorp configured with:
-URL         : [http://172.29.0.72:8200](http://172.29.0.72:8200/)
+URL         : http://10.0.65.75:8200
 Key name    : weka-key
-Auth method : Token
+Auth method : RoleId/SecretId
 ```
 
 5. Create a file system and choose the encryption option 
