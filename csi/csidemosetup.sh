@@ -13,6 +13,8 @@ else
     echo "weka user login"
     exit 1
 fi
+# update WEKA cert
+./updatecert.sh
 # install git 
 yum install git -y
 # install docker
