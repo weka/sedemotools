@@ -15,6 +15,8 @@ else
 fi
 # create WEKA CSI user
 weka user create wekacsi csi "CSIAdmin#"
+weka fs update default --ssd-capacity 100gb
+weka fs update default --total-capacity 100gb
 # update WEKA cert
 ./updatecert.sh
 # install git 
