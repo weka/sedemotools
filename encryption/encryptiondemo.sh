@@ -112,7 +112,7 @@ echo "ROLE_ID: $ROLE_ID"
 echo "SECRET_ID: $SECRET_ID"
 echo "------------------------------------------------------------------"
 
-read -p "Do you want to configure WEKA? (y/n): " CONFIGURE_WEKA
+read -p "Do you want to configure WEKA using the values above? (y/n): " CONFIGURE_WEKA
 
 if [[ "$CONFIGURE_WEKA" == "y" || "$CONFIGURE_WEKA" == "Y" ]]; then  
     if ! command -v weka >/dev/null 2>&1; then
