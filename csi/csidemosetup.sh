@@ -24,6 +24,7 @@ weka fs update default --ssd-capacity 100gb
 weka fs update default --total-capacity 100gb
 echo "Updating WEKA cert"
 # update WEKA cert
+chmod +x ./updatecert.sh
 ./updatecert.sh
 # install git 
 yum install git -y
