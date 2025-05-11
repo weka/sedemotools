@@ -74,7 +74,7 @@ kubectl get pods -n csi-wekafs
 
 
 ### Create a static PV
-All the examples above create a dynamic PV from a PVC.   In this exa,ple we create a PVC using a static PV
+All the examples above create a dynamic PV from a PVC.   In this example we create a PVC using a static PV
 Edit the YAML file with the correct directory name
 ```
 vi pv-wekafs-dir-static.yaml
