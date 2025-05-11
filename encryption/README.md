@@ -1,3 +1,5 @@
+# Vault Demo
+
 Use this when testing or demoing vault.
 
 Features:
@@ -28,9 +30,9 @@ KMS is not configured. Encrypted filesystems are supported with a local encrypti
 
 3. Run the script below including the step to configure KMS in WEKA.
 
-`./encryptiondemo.sh`
+`./vaultdemo.sh`
 
-5. Show  that the KMS is now setup:
+4. Show  that the KMS is now setup:
 ```
 [root@weka72 tmp]# weka security kms
 Using an external Vault by HashiCorp configured with:
