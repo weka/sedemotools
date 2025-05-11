@@ -4,7 +4,7 @@
 TOKEN=$1
 
 if [ -z "$TOKEN" ]; then
-  echo "Error: TOKEN not provided."
+  echo "Error: WEKA API TOKEN for get.weka.io access not provided."
   echo "Usage: $0 <TOKEN>"
   exit 1
 fi
