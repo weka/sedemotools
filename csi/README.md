@@ -3,9 +3,14 @@
 The installer will:
 
 1. Create a CSI user on WEKA
-1. Update the WEKA Cert so we can use https
+1. Update the WEKA Cert so we can use https rather than http
 1. Install docker, minicube, kubectl, helm and WEKA CSI plugin (in that order)
 1. Create a secret file that will work with no edits
+
+```
+cd sedemotools/csi
+./csidemosetup.sh
+```
 
 One this has been done, simply follow the process below:
 
