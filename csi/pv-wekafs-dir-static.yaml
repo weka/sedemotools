@@ -3,7 +3,7 @@ kind: PersistentVolume
 metadata:
   name: pv-wekafs-dir-static
 spec:
-  storageClassName: storageclass-wekafs-dir-api
+  storageClassName: storageclass-wekafs-dir
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain

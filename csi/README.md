@@ -36,8 +36,8 @@ kubectl describe sc storageclass-wekafs-fs
 ```
 ls -l /mnt/weka
 kubectl apply -f pvc-wekafs-dir.yaml -n csi-wekafs
-kubectl get pvc -n csi-wekafs
-kubectl describe pvc -n csi-wekafs
+kubectl get pvc pvc-wekafs-dir -n csi-wekafs
+kubectl describe pvc pvc-wekafs-dir -n csi-wekafs
 kubectl get pv
 ```
 #### Check the PV once its ready
@@ -50,7 +50,7 @@ Run a POD to write to that dir
 kubectl apply -f pod-app-on-dir.yaml -n csi-wekafs
 kubectl get pods -n csi-wekafs
 ```
-### make a filesystem backed PV and check.  
+### Make a filesystem backed PV and check.  
 Show the current filesystems
 ```
 weka fs
@@ -58,8 +58,8 @@ weka fs
 Create a new FS backed PV
 ```
 kubectl apply -f pvc-wekafs-fs.yaml -n csi-wekafs
-kubectl get pvc -n csi-wekafs
-kubectl describe pvc -n csi-wekafs
+kubectl get pvc pvc-wekafs-fs -n csi-wekafs
+kubectl describe pvc pvc-wekafs-fs -n csi-wekafs
 kubectl get pv
 ```
 Show the new FS:
@@ -73,7 +73,8 @@ kubectl get pods -n csi-wekafs
 ```
 
 
-#### Create a static PV
+### Create a static PV
+All the examples above create a dynamic PV from a PVC.   In this exa,ple we create a PVC using a static PV
 Edit the YAML file with the correct directory name
 ```
 vi pv-wekafs-dir-static.yaml
@@ -82,6 +83,12 @@ Now create the PV
 ```
 kubectl apply -f pv-wekafs-dir-static.yaml -n csi-wekafs
 kubectl get pv pv-wekafs-dir-static
+```
+Now create the PVC
+```
+kubectl apply -f pvc-wekafs-dir-static.yaml -n csi-wekafs
+kubectl get pvc  pvc-wekafs-dir-static -n csi-wekafs
+kubectl describe pvc pvc-wekafs-dir-static -n csi-wekafs
 ```
 
 
