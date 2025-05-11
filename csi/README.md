@@ -71,6 +71,23 @@ Run a POD to write to that FS
 kubectl apply -f pod-app-on-fs.yaml -n csi-wekafs
 kubectl get pods -n csi-wekafs
 ```
+
+
+#### Create a static PV
+Edit the YAML file with the correct directory name
+```
+vi pv-wekafs-dir-static.yaml
+```
+Now create the PV
+```
+kubectl apply -f pv-wekafs-dir-static.yaml -n csi-wekafs
+kubectl get pv pv-wekafs-dir-static
+```
+
+
+
+
+
 ### If a clean up is needed
 ```
 kubectl delete sc storageclass-wekafs-fs 
