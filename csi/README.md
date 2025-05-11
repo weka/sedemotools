@@ -8,6 +8,10 @@ kubectl get secret -n csi-wekafs
 ```
 kubectl apply -f storageclass-wekafs-dir-api.yaml
 kubectl apply -f storageclass-wekafs-fs-api.yaml
+kubectl get sc storageclass-wekafs-dir-api
+kubectl get sc storageclass-wekafs-fs-api
+kubectl describe sc storageclass-wekafs-dir-api
+kubectl describe sc storageclass-wekafs-fs-api
 ```
 ### Make a directory backed PV
 ```
