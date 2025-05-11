@@ -10,7 +10,7 @@ spec:
       - mountPath: "/data"
         name: my-csi-volume-fs
       command: ["/bin/sh"]
-      args: ["-c", "while true; do echo `date` >> /data/temp_dir.txt; sleep 10;done"]
+      args: ["-c", "while true; do echo `date` >> /data/temp_fs.txt; sleep 10;done"]
   volumes:
     - name: my-csi-volume-fs
       persistentVolumeClaim:

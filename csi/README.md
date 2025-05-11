@@ -42,7 +42,8 @@ ls -l /mnt/weka/csi-volumes/
 ```
 Run a POD to write to that dir
 ```
-kubectl apply -f pod-app-on-dir.yaml
+kubectl apply -f pod-app-on-dir.yaml -n csi-wekafs
+kubectl get pods -n csi-wekafs
 ```
 ### make a filesystem backed PV and check.  
 Show the current filesystems
@@ -62,7 +63,8 @@ weka fs
 ```
 Run a POD to write to that FS
 ```
-kubectl apply -f pod-app-on-fs.yaml
+kubectl apply -f pod-app-on-fs.yaml -n csi-wekafs
+kubectl get pods -n csi-wekafs
 ```
 ### If a clean up is needed
 ```
