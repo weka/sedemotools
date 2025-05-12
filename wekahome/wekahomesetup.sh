@@ -15,8 +15,8 @@ echo "Graphana password (for admin user)"
 echo $GRAPHANAPASSWORD
 
 #learn local IP
-LOCSALIP=$(ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '^127' | head -n 1)
+LOCALIP=$(ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '^127' | head -n 1)
 # enabling local WEKA home
 echo "To enable local WEKA home run this command:"
-echo "weka cloud enable --cloud-url http://$LOCSALIP"
+echo "weka cloud enable --cloud-url http://$LOCALIP"
 echo "If accessing via cloud ensure you have access to the LWH external IP on port 80"
