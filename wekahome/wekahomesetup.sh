@@ -5,13 +5,13 @@ read -s -p "Enter your get.weka.io token: " TOKEN
 
 # grab WEKA HOME and install it
 curl -LO https://$TOKEN@get.weka.io/dist/v1/lwh/3.2.15/wekahome-3.2.15.bundle
-bash wekahome-3.2.15.bundle
-/opt/wekahome/current/bin/homecli local setup
-WEKHOMEADMIN=$(/opt/k3s/bin/kubectl get secret -n home-weka-io wekahome-admin-credentials -o jsonpath='{.data.adminPassword}' | base64 -d)
-GRAPHANAPASSWORD=$(/opt/k3s/bin/kubectl get secret -n home-weka-io wekahome-grafana-credentials  -o jsonpath='{.data.password}' | base64 -d)
-echo "WEKA HOME ADMIN"
+sudo bash wekahome-3.2.15.bundle
+sudo /opt/wekahome/current/bin/homecli local setup
+WEKHOMEADMIN=$(sudo /opt/k3s/bin/kubectl get secret -n home-weka-io wekahome-admin-credentials -o jsonpath='{.data.adminPassword}' | base64 -d)
+GRAPHANAPASSWORD=$(sudo /opt/k3s/bin/kubectl get secret -n home-weka-io wekahome-grafana-credentials  -o jsonpath='{.data.password}' | base64 -d)
+echo "WEKA HOME password (for admin user)"
 echo $WEKHOMEADMIN
-echo "Graphana password"
+echo "Graphana password (for admin user)"
 echo $GRAPHANAPASSWORD
 
 #learn local IP
