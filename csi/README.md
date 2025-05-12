@@ -79,7 +79,11 @@ kubectl get pods -n csi-wekafs
 ```
 
 ### Create a static PV
-All the examples above create a dynamic PV from a PVC.   In the commands below we create a PVC using a static PV so we need to edit the PV YAML file with the correct directory name:
+All the examples above create a dynamic PV from a PVC.   In the commands below we need to either create the ***/default/testdir*** folder or we need to edit the PV YAML file with the correct directory name.  The mkdir command example presumes you mounted the default filesystem on /mnt/weka.
+```
+mkdir /mnt/weka/testdir/
+```
+or
 ```
 vi pv-wekafs-dir-static.yaml
 ```
