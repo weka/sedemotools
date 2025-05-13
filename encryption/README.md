@@ -28,7 +28,7 @@ This script is perfect for doing an encryption demo.  Ideally run it on a WEKA c
 KMS is not configured. Encrypted filesystems are supported with a local encryption key
 ```
 
-3. Run the script below including the step to configure KMS in WEKA.
+3. Run the script below as root, including the step to configure KMS in WEKA.
 
 `./vaultdemo.sh`
 

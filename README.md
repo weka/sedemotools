@@ -4,15 +4,19 @@ This is a repo of scripts to run quick demos of WEKA using a cloud deployed clus
 
 1. Deploy a WEKA cluster with c5n.4xlarge clients or larger
 2. Login to a client
-3. Confirm you have git:
+3. su to root
 ```
-sudo yum install git -y
+sudo su -
+```
+4. Confirm you have git:
+```
+yum install git -y
 ```
 or
 ```
-sudo apt install git -y
+apt install git -y
 ```
-4. Clone this repo
+5. Clone this repo
 ```
 git clone https://github.com/weka/sedemotools
 ```
