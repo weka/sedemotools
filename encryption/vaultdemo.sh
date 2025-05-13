@@ -175,7 +175,7 @@ if [[ "$CONFIGURE_WEKA" == "y" || "$CONFIGURE_WEKA" == "Y" ]]; then
     fi
 else
     echo "------------------------------------------------------------------"
-    echo "Run this command when the client is ready and you are logged in" 
+    echo "Run this command on your WEKA cluster when you are ready:" 
     echo ""
     echo "weka security kms set vault $VAULT_ADDR $KEYNAME --role-id $ROLE_ID --secret-id $SECRET_ID"
 fi
