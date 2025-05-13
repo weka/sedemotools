@@ -1,14 +1,18 @@
 #!/bin/bash
 
 # prompt for a TOKEN
-read -s -p "Enter your get.weka.io token: " TOKEN
+read -s -p "Enter your get.weka.io token (it wont appear on the screen): " TOKEN
 
 # grab WEKA HOME and install it
+echo "Downloading WEKA home bundle"
 curl -LO https://$TOKEN@get.weka.io/dist/v1/lwh/3.2.15/wekahome-3.2.15.bundle
-sudo bash wekahome-3.2.15.bundle
-sudo /opt/wekahome/current/bin/homecli local setup
-WEKHOMEADMIN=$(sudo /opt/k3s/bin/kubectl get secret -n home-weka-io wekahome-admin-credentials -o jsonpath='{.data.adminPassword}' | base64 -d)
-GRAPHANAPASSWORD=$(sudo /opt/k3s/bin/kubectl get secret -n home-weka-io wekahome-grafana-credentials  -o jsonpath='{.data.password}' | base64 -d)
+echo "Unpacking WEKA HOME"
+bash wekahome-3.2.15.bundle
+echo "Installing WEKA HOME"
+source /etc/profile
+homecli local setup
+WEKHOMEADMIN=$(kubectl get secret -n home-weka-io wekahome-admin-credentials -o jsonpath='{.data.adminPassword}' | base64 -d)
+GRAPHANAPASSWORD=$(kubectl get secret -n home-weka-io wekahome-grafana-credentials  -o jsonpath='{.data.password}' | base64 -d)
 echo "WEKA HOME password (for admin user)"
 echo $WEKHOMEADMIN
 echo "Graphana password (for admin user)"
