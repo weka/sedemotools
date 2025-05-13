@@ -173,6 +173,11 @@ if [[ "$CONFIGURE_WEKA" == "y" || "$CONFIGURE_WEKA" == "Y" ]]; then
         echo "weka fs update default --ssd-capacity 100gb"
         echo "weka fs update default --total-capacity 100gb"
     fi
+else
+    echo "------------------------------------------------------------------"
+    echo "Run this command when the client is ready and you are logged in" 
+    echo ""
+    echo "weka security kms set vault $VAULT_ADDR $KEYNAME --role-id $ROLE_ID --secret-id $SECRET_ID"
 fi
 
 
