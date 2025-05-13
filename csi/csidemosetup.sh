@@ -15,6 +15,11 @@ else
     echo "weka user login"
     exit 1
 fi
+if command -v apt >/dev/null 2>&1; then
+    UBUNTU="y"
+else
+    UBUNTU="n"
+fi
 # we create WEKA CSI user as this is best practice
 echo "Creating a CSI user"
 weka user create wekacsi csi "CSIAdmin#"
@@ -27,27 +32,29 @@ echo "Updating WEKA cert"
 chmod +x ./updatecert.sh
 ./updatecert.sh
 # install git 
-yum install git -y
+[[ "$UBUNTU" == "y" ]] && sudo apt install git -y
+[[ "$UBUNTU" == "n" ]] && sudo yum install git -y
 # install docker
-yum install docker -y
-systemctl start docker
-docker ps
+[[ "$UBUNTU" == "y" ]] && sudo apt install docker.io -y
+[[ "$UBUNTU" == "n" ]] && sudo yum install docker -y
+sudo systemctl start docker
+sudo docker ps
 # install minicube
 curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
-install minikube-linux-amd64 /usr/local/bin/minikube && rm -f minikube-linux-amd64
-minikube start --force
+sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm -f minikube-linux-amd64
+sudo minikube start --force
 minikube status
 minikube kubectl get nodes
 # install kubectrl
 curl -LO https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubectl
-install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 kubectl version
 #install helm
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 chmod 700 get_helm.sh
-./get_helm.sh
+sudo ./get_helm.sh
 helm version
-# install CSI pluging
+# install CSI plugin
 git clone https://github.com/kubernetes-csi/external-snapshotter 
 kubectl -n kube-system kustomize external-snapshotter/deploy/kubernetes/snapshot-controller | kubectl create -f -
 kubectl kustomize client/config/crd | kubectl create -f -
