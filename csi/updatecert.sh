@@ -2,15 +2,13 @@
 
 # Configuration
 WEKA_IP=$(weka cluster process --filter role=management -o ips --no-header -b | head -1)
-CERT_PATH="/etc/ssl/weka/weka.crt"
-KEY_PATH="/etc/ssl/weka/weka.key"
 NEW_CERT="/tmp/weka_new.crt"
 NEW_KEY="/tmp/weka_new.key"
 SAN_IP="$WEKA_IP"
 
 # Step 1: Download existing cert
 echo "[+] Downloading existing certificate from $WEKA_IP..."
-openssl s_client -connect ${WEKA_IP}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM > /tmp/weka_current.crt
+openssl s_client -connect ${WEKA_IP}:14000 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM > /tmp/weka_current.crt
 
 # Step 2: Generate new key and config for SAN
 echo "[+] Generating new key and OpenSSL config for SAN..."
