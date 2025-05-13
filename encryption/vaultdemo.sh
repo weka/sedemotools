@@ -8,6 +8,13 @@ if [[ $VAULT_VERSION == "" ]]; then
     VAULT_VERSION="1.19.0"
 fi
 
+if command -v apt >/dev/null 2>&1; then
+    UBUNTU="y"
+else
+    UBUNTU="n"
+fi
+[[ "$UBUNTU" == "y" ]] && apt install zip -y
+
 # Construct the URL for the specified Vault version
 VAULT_URL="https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip"
 

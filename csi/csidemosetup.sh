@@ -32,32 +32,32 @@ echo "Updating WEKA cert"
 chmod +x ./updatecert.sh
 ./updatecert.sh
 # install git 
-[[ "$UBUNTU" == "y" ]] && sudo apt install git -y
-[[ "$UBUNTU" == "n" ]] && sudo yum install git -y
+[[ "$UBUNTU" == "y" ]] && apt install git -y
+[[ "$UBUNTU" == "n" ]] && yum install git -y
 # install docker
-[[ "$UBUNTU" == "y" ]] && sudo apt install docker.io -y
-[[ "$UBUNTU" == "n" ]] && sudo yum install docker -y
-sudo systemctl start docker
-sudo docker ps
+[[ "$UBUNTU" == "y" ]] && apt install docker.io -y
+[[ "$UBUNTU" == "n" ]] && yum install docker -y
+systemctl start docker
+docker ps
 # install minicube
 curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
-sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm -f minikube-linux-amd64
-sudo minikube start --force
+install minikube-linux-amd64 /usr/local/bin/minikube && rm -f minikube-linux-amd64
+minikube start --force
 minikube status
 minikube kubectl get nodes
 # install kubectrl
 curl -LO https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubectl
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 kubectl version
 #install helm
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-chmod 700 get_helm.sh
-sudo ./get_helm.sh
+chmod 700 get_helm.sh 
+./get_helm.sh
 helm version
 # install CSI plugin
 git clone https://github.com/kubernetes-csi/external-snapshotter 
 kubectl -n kube-system kustomize external-snapshotter/deploy/kubernetes/snapshot-controller | kubectl create -f -
-kubectl kustomize client/config/crd | kubectl create -f -
+kubectl kustomize client/config/crd | sudo kubectl create -f -
 helm repo add csi-wekafs https://weka.github.io/csi-wekafs
 helm install csi-wekafs csi-wekafs/csi-wekafsplugin --namespace csi-wekafs --create-namespace
 # create secret yaml
