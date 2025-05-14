@@ -7,6 +7,8 @@ The CSI demo setup script will:
 1. Install docker, minicube, kubectl, helm and the WEKA CSI plugin (in that order)
 1. Create a YAML file for the secret that will work with no further edits
 
+Make sure your boot disk is at least 20 GB in size (10 GB is too small).
+
 To run the installer do the following as root:
 
 ```
