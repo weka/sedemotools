@@ -56,7 +56,7 @@ helm version
 # install CSI plugin
 git clone https://github.com/kubernetes-csi/external-snapshotter 
 kubectl -n kube-system kustomize external-snapshotter/deploy/kubernetes/snapshot-controller | kubectl create -f -
-kubectl kustomize client/config/crd | sudo kubectl create -f -
+kubectl kustomize client/config/crd | kubectl create -f -
 helm repo add csi-wekafs https://weka.github.io/csi-wekafs
 helm install csi-wekafs csi-wekafs/csi-wekafsplugin --namespace csi-wekafs --create-namespace
 # create secret yaml
