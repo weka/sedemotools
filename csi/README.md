@@ -15,6 +15,17 @@ To run the installer do the following as root:
 cd sedemotools/csi
 ./csidemosetup.sh
 ```
+Check that the CSI pods are running:
+```
+kubectl get pods -n csi-wekafs
+```
+Output should look like this:
+```
+NAME                                     READY   STATUS    RESTARTS   AGE
+csi-wekafs-controller-54c7bc6d6c-6wf4w   6/6     Running   0          3m14s
+csi-wekafs-controller-54c7bc6d6c-swp6c   6/6     Running   0          3m14s
+csi-wekafs-node-546f4                    3/3     Running   0          3m14s
+```
 
 One this has been done, simply follow the process below:
 
