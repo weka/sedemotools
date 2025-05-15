@@ -1,8 +1,9 @@
-### Create WEKA Home on a WEKA Client
-1. Deploy a client 
-2. Sign into client
-3. Run the script as root
+### Create a WEKA Home for demo
+Make sure your boot drive is at least 20 GB in size.   
+1. Deploy a client VM
+2. Sign into client VM
+3. Run this script as root
 ```
 ./wekahomesetup.sh
 ```
-4. Login to WEKA HOME on browser.   This may require a firewall change.
+5. Login to WEKA HOME on browser.   This may require a firewall change.

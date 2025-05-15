@@ -46,7 +46,7 @@ EOF
 # Step 3: Generate key and CSR
 openssl req -new -nodes -newkey rsa:2048 \
   -keyout "$NEW_KEY" -out /tmp/weka.csr \
-  -config /tmp/weka_cert.cnf
+  -config /tmp/weka_cert.cnf >/dev/null 2>&1
 
 # Step 4: Self-sign new cert
 openssl x509 -req -in /tmp/weka.csr -signkey "$NEW_KEY" -out "$NEW_CERT" \
