@@ -1,5 +1,9 @@
 #!/bin/bash
 # this script wil install all required files into Amazon Linux 2 to run a CSI demo
+if [[ "$EUID" -ne 0 ]]; then
+  echo "Error: This script must be run as root."
+  exit 1
+fi
 # we need to be logged into WEKA
 if ! command -v weka >/dev/null 2>&1; then
     echo "WEKA client not found.  Please install WEKA client first"
@@ -21,7 +25,7 @@ else
     UBUNTU="n"
 fi
 # we create WEKA CSI user as this is best practice
-echo "Creating a CSI user"
+echo "Creating a new CSI user:  wekacsi"
 weka user create wekacsi csi "CSIAdmin#"
 # the default fs steals all the space, so we shrink it
 echo "Shrinking the default FS"
