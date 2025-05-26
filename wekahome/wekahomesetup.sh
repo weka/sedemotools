@@ -9,8 +9,12 @@ if [ -z "$LOCAL_IP" ]; then
   exit 1
 fi
 
+if [[ "$EUID" -ne 0 ]]; then
+  echo "Error: This script must be run as root."
+  exit 1
+fi
+
 echo "Using local IP for WEKA Home: $LOCAL_IP"
-echo "Generating a self signed certificate for WEKA Home"
 # Create a temporary OpenSSL config with SAN
 cat > openssl-san.cnf <<EOF
 [ req ]
@@ -30,7 +34,7 @@ subjectAltName = @alt_names
 IP.1 = $LOCAL_IP
 EOF
 
- Generate the self-signed certificate and private key
+# Generate the self-signed certificate and private key
  openssl req -x509 -nodes -days 365 \
   -newkey rsa:2048 \
   -keyout server.key \
@@ -40,15 +44,50 @@ EOF
 # Clean up
 rm -f openssl-san.cnf
 
-
 # prompt for a TOKEN
-read -s -p "Enter your get.weka.io token (it wont appear on the screen): " TOKEN
+if [[ -n $1 ]]; then
+  TOKEN=$1
+else
+  read -s -p "Enter your get.weka.io token (it wont appear on the screen): " TOKEN
+fi
+
+if [[ -z "$TOKEN" ]]; then
+  echo ""
+  echo "Error: No token supplied."
+  echo "Usage: $0 <token>"
+  exit 1
+fi
+
+# Minimum token length requirement
+MIN_LENGTH=16
+
+# Get the length of the token
+TOKEN_LENGTH=${#TOKEN}
+
+# Evaluate length
+if (( TOKEN_LENGTH < MIN_LENGTH )); then
+  echo ""
+  echo "Error: Token is too short. Must be at least $MIN_LENGTH characters."
+  echo "Provided token length: $TOKEN_LENGTH"
+  exit 1
+fi
 
 # grab WEKA Home and install it
+VERSION=3.2.15
+
 echo ""
 echo "Downloading WEKA Home bundle"
-curl -LO https://$TOKEN@get.weka.io/dist/v1/lwh/3.2.15/wekahome-3.2.15.bundle
-echo "Unpacking WEKA Home"
+curl -LO https://$TOKEN@get.weka.io/dist/v1/lwh/$VERSION/wekahome-$VERSION.bundle
+
+FILE="wekahome-$VERSION.bundle"
+
+if [[ -f "$FILE" ]]; then
+  echo "Unpacking $FILE"
+else
+  echo "Error: File '$FILE' not found."
+  exit 1
+fi
+
 bash wekahome-3.2.15.bundle
 echo "Installing WEKA Home"
 source /etc/profile
