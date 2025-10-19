@@ -73,7 +73,7 @@ if (( TOKEN_LENGTH < MIN_LENGTH )); then
 fi
 
 # grab WEKA Home and install it
-VERSION=3.2.15
+VERSION=4.2.4
 
 echo ""
 echo "Downloading WEKA Home bundle"
