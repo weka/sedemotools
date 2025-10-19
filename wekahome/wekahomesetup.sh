@@ -88,7 +88,7 @@ else
   exit 1
 fi
 
-bash wekahome-3.2.15.bundle
+bash wekahome-$VERSION.bundle
 echo "Installing WEKA Home"
 source /etc/profile
 # homecli local setup
