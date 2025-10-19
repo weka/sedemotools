@@ -76,7 +76,7 @@ fi
 VERSION=4.2.4
 
 echo ""
-echo "Downloading WEKA Home bundle"
+echo "Downloading WEKA Home bundle version $VERSION"
 curl -LO https://$TOKEN@get.weka.io/dist/v1/lwh/$VERSION/wekahome-$VERSION.bundle
 
 FILE="wekahome-$VERSION.bundle"
