@@ -1,5 +1,15 @@
 This is a repo of scripts to run quick demos of WEKA using a cloud deployed cluster.
 
+**Available demos**
+
+There are scripts to run the following demos:
+
+1.  Demonstrate encyrption using Hashicorp Vault
+2.  Demonstrate the CSI driver using K3S
+3.  Demonstrate Local WEKA Home
+
+You can run each demo either on a separate client or all on the same client.
+
 **Instructions**
 
 1. Deploy a WEKA cluster with c5n.4xlarge clients or larger
