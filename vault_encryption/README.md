@@ -190,26 +190,6 @@ $V read transit/keys/tenant1-key
 
 > **Tip:** `weka security kms rewrap` (no filesystem argument) rewraps all filesystems using the **global** `weka-key` only.  For filesystems with a dedicated per-tenant key, use `weka fs kms-rewrap <name>` instead.
 
-### Step 5 — Rotate the AppRole secret_id
-
-Do this **after** the rewrap.  Revoking the old secret_id invalidates the credentials WEKA has stored for this filesystem — any WEKA crypto operation (including `kms-rewrap`) will fail with "invalid role or secret ID" until the credentials are updated.  For a demo this is fine; in production you would update WEKA's stored credentials before revoking the old secret_id.
-
-The destroy endpoint takes an **accessor** (not the secret_id value itself) — capture it into a variable *before* generating the replacement so the two are never confused.
-
-```bash
-# 1. Capture the OLD accessor before issuing a new secret_id
-OLD_ACCESSOR=$($V list -format=json auth/approle/role/tenant1/secret-id \
-    | python3 -c "import json,sys; print(json.load(sys.stdin)[0])")
-echo "Old accessor: $OLD_ACCESSOR"
-
-# 2. Generate a new secret_id
-NEW_SECRET_ID=$($V write -f -field=secret_id auth/approle/role/tenant1/secret-id)
-echo "New SECRET_ID: $NEW_SECRET_ID"
-
-# 3. Revoke the OLD accessor — note: this takes the accessor, not the secret_id value
-$V write auth/approle/role/tenant1/secret-id-accessor/destroy \
-    secret_id_accessor="$OLD_ACCESSOR"
-```
 
 ### Teardown for the tenant1 example
 
