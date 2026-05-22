@@ -175,7 +175,7 @@ weka fs --output name,group,availableTotal,status,encrypted,kmsKey,kmsRole --fil
 
 ### Step 4 — Rotate the transit key and rewrap the filesystem DEK
 
-Do this **before** rotating the AppRole credentials — WEKA authenticates to Vault using the stored secret_id during the rewrap, so those credentials must still be valid.
+Rotating the transit key is standard security hygiene — it limits the blast radius if an older key version were ever compromised.  After rotation, `weka fs kms-rewrap` re-encrypts the filesystem's DEK with the new key version so the old version is no longer needed for future operations.
 
 ```bash
 # Rotate the key — adds a new version, old version kept for decryption
