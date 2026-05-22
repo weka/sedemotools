@@ -116,18 +116,18 @@ get_vault_versions() {
     [[ -z "$api_response" ]] && return 1
 
     if command -v python3 >/dev/null 2>&1; then
-        echo "$api_response" | python3 - <<'PY' 2>/dev/null
+        echo "$api_response" | python3 -c '
 import json, sys
 data = json.load(sys.stdin)
 seen = []
 for r in data:
-    v = r.get('version', '')
-    if not any(x in v for x in ['rc', 'beta', 'alpha', '+ent']) and v:
+    v = r.get("version", "")
+    if not any(x in v for x in ["rc", "beta", "alpha", "+ent"]) and v:
         seen.append(v)
     if len(seen) >= 10:
         break
-print('\n'.join(seen))
-PY
+print("\n".join(seen))
+' 2>/dev/null
     elif command -v jq >/dev/null 2>&1; then
         echo "$api_response" \
             | jq -r '.[] | select(.version | test("rc|beta|alpha|\\+ent") | not) | .version' 2>/dev/null \

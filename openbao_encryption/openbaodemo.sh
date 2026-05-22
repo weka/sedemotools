@@ -140,21 +140,21 @@ get_openbao_versions() {
     [[ -z "$api_response" ]] && return 1
 
     if command -v python3 >/dev/null 2>&1; then
-        echo "$api_response" | python3 - <<'PY' 2>/dev/null
+        echo "$api_response" | python3 -c '
 import json, sys
 data = json.load(sys.stdin)
 seen = []
 for r in data:
-    if r.get('prerelease') or r.get('draft'):
+    if r.get("prerelease") or r.get("draft"):
         continue
-    v = r.get('tag_name', '').lstrip('v')
-    names = [a['name'] for a in r.get('assets', [])]
-    if any(n.endswith('.deb') or n.endswith('.rpm') for n in names) and v:
+    v = r.get("tag_name", "").lstrip("v")
+    names = [a["name"] for a in r.get("assets", [])]
+    if any(n.endswith(".deb") or n.endswith(".rpm") for n in names) and v:
         seen.append(v)
     if len(seen) >= 10:
         break
-print('\n'.join(seen))
-PY
+print("\n".join(seen))
+' 2>/dev/null
     elif command -v jq >/dev/null 2>&1; then
         echo "$api_response" \
             | jq -r '.[] | select(.prerelease == false and .draft == false) | .tag_name | ltrimstr("v")' 2>/dev/null \
