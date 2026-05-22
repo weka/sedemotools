@@ -192,18 +192,17 @@ $V write auth/approle/role/tenant1/secret-id-accessor/destroy \
     secret_id_accessor="$OLD_ACCESSOR"
 ```
 
-### Step 5 — Rewrap: rotate the transit key and rewrap the WEKA DEK
+### Step 5 — Rotate the transit key
 
 ```bash
 # Rotate the key (adds a new version; old version is kept for decryption)
 $V write -f transit/keys/tenant1-key/rotate
 
-# Confirm the new key version is active
+# Confirm latest_version has incremented
 $V read transit/keys/tenant1-key
-
-# Tell WEKA to rewrap all filesystem DEKs with the new key version
-weka security kms rewrap
 ```
+
+> **Note on `weka security kms rewrap`:** This command only rewraps DEKs for filesystems that were created using the **global** KMS key (`weka-key`).  Because `tenant1` uses a dedicated `tenant1-key`, `kms rewrap` will report `0 filesystem keys rewrapped` and that is expected.  The transit key rotation above is sufficient — WEKA will use the latest key version automatically on future key operations.
 
 ### Teardown for the tenant1 example
 
