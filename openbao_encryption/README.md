@@ -213,14 +213,14 @@ bao write auth/approle/role/tenant1/secret-id-accessor/destroy \
 Rotating the key adds a new key version in OpenBao.  Then use `weka fs kms-rewrap` to re-encrypt the filesystem's DEK with the new version.
 
 ```bash
-# Rotate the key (adds a new version; old version is kept for decryption)
+# Rotate the key — this is the only OpenBao step required before the rewrap
 bao write -f transit/keys/tenant1-key/rotate
-
-# Confirm latest_version has incremented
-bao read transit/keys/tenant1-key
 
 # Rewrap the tenant1 filesystem DEK with the new key version
 weka fs kms-rewrap tenant1
+
+# Optional: confirm latest_version incremented and the old version is still kept for decryption
+bao read transit/keys/tenant1-key
 ```
 
 > **Tip:** `weka security kms rewrap` (no filesystem argument) rewraps all filesystems using the **global** `weka-key` only.  For filesystems with a dedicated per-tenant key, use `weka fs kms-rewrap <name>` instead.
