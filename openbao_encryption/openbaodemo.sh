@@ -44,6 +44,59 @@ print_error()   { echo -e "${RED}  ✗ $1${NC}"; }
 print_info()    { echo -e "  $1"; }
 print_divider() { echo -e "${CYAN}------------------------------------------------------------------${NC}"; }
 
+# Detect leftover state from a previous run and offer to clean it all up.
+check_existing_state() {
+    local running_pid enc_fs_list kms_configured=false needs_cleanup=false
+
+    running_pid=$(pgrep -x "bao" 2>/dev/null || true)
+    [[ -n "$running_pid" ]] && needs_cleanup=true
+
+    if command -v weka >/dev/null 2>&1 && weka status >/dev/null 2>&1; then
+        if ! weka security kms 2>/dev/null | grep -q "KMS is not configured"; then
+            kms_configured=true
+            needs_cleanup=true
+        fi
+        enc_fs_list=$(weka fs -o name,encrypted --no-header 2>/dev/null \
+            | awk 'tolower($2)=="true"{print $1}' | tr '\n' ' ' | sed 's/ $//')
+        [[ -n "$enc_fs_list" ]] && needs_cleanup=true
+    fi
+
+    [[ "$needs_cleanup" == "false" ]] && return 0
+
+    echo ""
+    print_warn "Existing state detected from a previous run:"
+    [[ -n "$running_pid" ]]   && print_info "  OpenBao is running (PID: ${running_pid})"
+    [[ "$kms_configured" == "true" ]] && print_info "  WEKA KMS is configured"
+    [[ -n "$enc_fs_list" ]]   && print_info "  Encrypted filesystems: ${enc_fs_list}"
+    echo ""
+    read -p "  Clean up all of the above and start fresh? (y/n): " DO_CLEANUP
+    if [[ ! "$DO_CLEANUP" =~ ^[Yy]$ ]]; then
+        print_info "Exiting without changes."
+        exit 0
+    fi
+
+    # Stop OpenBao
+    if [[ -n "$running_pid" ]]; then
+        pkill -x bao 2>/dev/null; sleep 1
+        print_ok "OpenBao stopped"
+    fi
+
+    if command -v weka >/dev/null 2>&1 && weka status >/dev/null 2>&1; then
+        # Delete encrypted filesystems
+        for fs in $enc_fs_list; do
+            if weka fs delete "$fs" -f 2>/dev/null; then
+                print_ok "Deleted filesystem: ${fs}"
+            fi
+        done
+        # Reset KMS
+        if [[ "$kms_configured" == "true" ]]; then
+            weka security kms reset 2>/dev/null
+            print_ok "WEKA KMS reset"
+        fi
+    fi
+    echo ""
+}
+
 # Open port 8200 so WEKA backend nodes can reach the dev server.
 open_firewall_port() {
     local port=8200
@@ -211,24 +264,13 @@ if ! command -v curl >/dev/null 2>&1; then
     exit 1
 fi
 
+# Detect and clean up state from any previous run
+check_existing_state
+
 # Pick an OpenBao version
 select_version
 echo ""
 print_ok "Using OpenBao version: ${BAO_VERSION}"
-
-# Stop any already-running bao process
-if pgrep -x "bao" >/dev/null; then
-    print_warn "OpenBao (bao) is already running."
-    read -p "  Kill the existing instance and continue? (y/n): " KILL_EXISTING
-    if [[ "$KILL_EXISTING" =~ ^[Yy]$ ]]; then
-        pkill -x bao
-        sleep 1
-        print_ok "Existing OpenBao instance stopped."
-    else
-        print_info "Exiting without changes."
-        exit 0
-    fi
-fi
 
 # Install or upgrade
 if command -v bao >/dev/null 2>&1; then
@@ -342,10 +384,16 @@ if [[ "$CONFIGURE_WEKA" =~ ^[Yy]$ ]]; then
     fi
     print_ok "WEKA client authenticated."
 
-    if weka fs -o encrypted --no-header 2>/dev/null | grep -qi "true" || \
-       ! weka security kms 2>/dev/null | grep -q "KMS is not configured"; then
-        print_error "An encrypted filesystem or KMS is already configured — reset it first."
-        exit 1
+    if ! weka security kms 2>/dev/null | grep -q "KMS is not configured"; then
+        print_warn "WEKA KMS is already configured."
+        read -p "  Reset it and reconfigure? (y/n): " RESET_KMS
+        if [[ "$RESET_KMS" =~ ^[Yy]$ ]]; then
+            weka security kms reset 2>/dev/null
+            print_ok "KMS reset"
+        else
+            print_info "Exiting without changes."
+            exit 0
+        fi
     fi
 
     print_info "Configuring WEKA KMS..."
