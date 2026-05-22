@@ -115,6 +115,98 @@ rm -rf ~/vault-dir
 
 ---
 
+## Tenant AppRole example — new tenant with dedicated key
+
+This shows how to add a second tenant (`tenant1`) with its own isolated transit key, create an encrypted filesystem for it, rotate the AppRole credentials, and rewrap the filesystem DEK after a key rotation.
+
+All commands assume Vault is already running from the script and `VAULT_ADDR` / `VAULT_TOKEN` are exported in your shell.  The `vault` binary is at `~/vault-dir/vault`.
+
+```bash
+V=~/vault-dir/vault
+```
+
+### Step 1 — Create a dedicated transit key and policy
+
+```bash
+$V write -f transit/keys/tenant1-key
+
+cat > /tmp/tenant1_policy.hcl <<'EOF'
+path "transit/+/tenant1-key" {
+  capabilities = ["read", "create", "update"]
+}
+path "transit/keys/tenant1-key" {
+  capabilities = ["read"]
+}
+EOF
+$V policy write tenant1 /tmp/tenant1_policy.hcl
+```
+
+### Step 2 — Create an AppRole for tenant1
+
+```bash
+$V write auth/approle/role/tenant1 \
+    token_policies="tenant1" token_ttl=1h token_max_ttl=4h
+
+ROLE_ID=$($V read -field=role_id auth/approle/role/tenant1/role-id)
+SECRET_ID=$($V write -f -field=secret_id auth/approle/role/tenant1/secret-id)
+
+echo "ROLE_ID:    $ROLE_ID"
+echo "SECRET_ID:  $SECRET_ID"
+```
+
+### Step 3 — Create the encrypted WEKA filesystem
+
+```bash
+weka fs create tenant1 default 50GiB \
+  --encrypted \
+  --kms-key-identifier tenant1-key \
+  --kms-role-id "$ROLE_ID" \
+  --kms-secret-id "$SECRET_ID"
+
+weka fs --output name,group,availableTotal,status,encrypted --filter name=tenant1
+```
+
+### Step 4 — Rewrap: rotate the AppRole secret_id
+
+The `role_id` is stable and can be shared.  The `secret_id` should be rotated periodically.  Identify the old accessor first so you can explicitly revoke it after issuing a replacement.
+
+```bash
+# List the current secret_id accessor(s)
+$V list auth/approle/role/tenant1/secret-id
+
+# Generate a new secret_id
+NEW_SECRET_ID=$($V write -f -field=secret_id auth/approle/role/tenant1/secret-id)
+echo "New SECRET_ID: $NEW_SECRET_ID"
+
+# Revoke the old one by its accessor (replace <ACCESSOR> with the value from the list above)
+$V write auth/approle/role/tenant1/secret-id-accessor/destroy \
+    secret_id_accessor=<ACCESSOR>
+```
+
+### Step 5 — Rewrap: rotate the transit key and rewrap the WEKA DEK
+
+```bash
+# Rotate the key (adds a new version; old version is kept for decryption)
+$V write -f transit/keys/tenant1-key/rotate
+
+# Confirm the new key version is active
+$V read transit/keys/tenant1-key
+
+# Tell WEKA to rewrap all filesystem DEKs with the new key version
+weka security kms rewrap
+```
+
+### Teardown for the tenant1 example
+
+```bash
+weka fs delete tenant1 -f
+$V delete auth/approle/role/tenant1
+$V write transit/keys/tenant1-key/config deletion_allowed=true
+$V delete transit/keys/tenant1-key
+```
+
+---
+
 ## Troubleshooting
 
 | Symptom | Fix |
