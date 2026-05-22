@@ -159,14 +159,25 @@ fi
 
 export VAULT_ADDR="http://$IPADDR:8200"
 
+export VAULT_TOKEN="root"
+
 print_info "Starting Vault in dev mode at ${VAULT_ADDR}..."
-"$INSTALL_DIR/vault" server -dev -dev-listen-address="$IPADDR:8200" \
+"$INSTALL_DIR/vault" server -dev -dev-listen-address="$IPADDR:8200" -dev-root-token-id=root \
     > "$INSTALL_DIR/vault.log" 2>&1 &
 VAULT_PID=$!
 echo "$VAULT_PID" > "$INSTALL_DIR/vault.pid"
-sleep 2
 
-if ! kill -0 "$VAULT_PID" 2>/dev/null; then
+# Wait up to 15 s for the API to become ready
+READY=0
+for i in $(seq 1 15); do
+    if "$INSTALL_DIR/vault" status >/dev/null 2>&1; then
+        READY=1
+        break
+    fi
+    sleep 1
+done
+
+if [[ "$READY" -eq 0 ]] || ! kill -0 "$VAULT_PID" 2>/dev/null; then
     print_error "Vault failed to start. See: ${INSTALL_DIR}/vault.log"
     exit 1
 fi

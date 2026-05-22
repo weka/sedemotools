@@ -219,17 +219,28 @@ fi
 
 # OpenBao exposes the same HTTP API as Vault; WEKA uses the VAULT_ADDR env var.
 export VAULT_ADDR="http://$IPADDR:8200"
-export VAULT_TOKEN="root"   # dev mode always uses "root" as the root token
+export VAULT_TOKEN="root"
 
 mkdir -p "$WORK_DIR"
 print_info "Starting OpenBao in dev mode at ${VAULT_ADDR}..."
-bao server -dev -dev-listen-address="$IPADDR:8200" \
+# -dev-root-token-id=root pins the root token to the literal string "root"
+# so VAULT_TOKEN=root above is guaranteed to match
+bao server -dev -dev-listen-address="$IPADDR:8200" -dev-root-token-id=root \
     > "$WORK_DIR/bao.log" 2>&1 &
 BAO_PID=$!
 echo "$BAO_PID" > "$WORK_DIR/bao.pid"
-sleep 2
 
-if ! kill -0 "$BAO_PID" 2>/dev/null; then
+# Wait up to 15 s for the API to become ready
+READY=0
+for i in $(seq 1 15); do
+    if bao status >/dev/null 2>&1; then
+        READY=1
+        break
+    fi
+    sleep 1
+done
+
+if [[ "$READY" -eq 0 ]] || ! kill -0 "$BAO_PID" 2>/dev/null; then
     print_error "OpenBao failed to start. See: ${WORK_DIR}/bao.log"
     exit 1
 fi
