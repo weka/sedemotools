@@ -138,7 +138,12 @@ dnf remove openbao -y
 
 This shows how to add a second tenant (`tenant1`) with its own isolated transit key, create an encrypted filesystem for it, rotate the AppRole credentials, and rewrap the filesystem DEK after a key rotation.
 
-All commands assume OpenBao is already running from the script and `VAULT_ADDR` / `VAULT_TOKEN` are exported in your shell.
+All commands assume OpenBao is already running from the script.  If you are in a new shell, re-export the two required variables first:
+
+```bash
+export VAULT_ADDR="http://$(ip route get 1 | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1); exit}'):8200"
+export VAULT_TOKEN="root"
+```
 
 ### Step 1 — Create a dedicated transit key and policy
 
