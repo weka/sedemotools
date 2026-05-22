@@ -191,19 +191,21 @@ weka fs --output name,group,availableTotal,status,encrypted,kmsKey,kmsRole --fil
 
 ### Step 4 — Rewrap: rotate the AppRole secret_id
 
-The `role_id` is stable and can be shared.  The `secret_id` should be rotated periodically.  Identify the old accessor first so you can explicitly revoke it after issuing a replacement.
+The `role_id` is stable.  The `secret_id` should be rotated periodically.  The destroy endpoint takes an **accessor** (not the secret_id value itself) — capture it into a variable *before* generating the replacement so the two are never confused.
 
 ```bash
-# List the current secret_id accessor(s)
-bao list auth/approle/role/tenant1/secret-id
+# 1. Capture the OLD accessor before issuing a new secret_id
+OLD_ACCESSOR=$(bao list -format=json auth/approle/role/tenant1/secret-id \
+    | python3 -c "import json,sys; print(json.load(sys.stdin)[0])")
+echo "Old accessor: $OLD_ACCESSOR"
 
-# Generate a new secret_id
+# 2. Generate a new secret_id
 NEW_SECRET_ID=$(bao write -f -field=secret_id auth/approle/role/tenant1/secret-id)
 echo "New SECRET_ID: $NEW_SECRET_ID"
 
-# Revoke the old one by its accessor (replace <ACCESSOR> with the value from the list above)
+# 3. Revoke the OLD accessor — note: this takes the accessor, not the secret_id value
 bao write auth/approle/role/tenant1/secret-id-accessor/destroy \
-    secret_id_accessor=<ACCESSOR>
+    secret_id_accessor="$OLD_ACCESSOR"
 ```
 
 ### Step 5 — Rewrap: rotate the transit key and rewrap the WEKA DEK
