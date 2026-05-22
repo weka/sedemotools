@@ -186,7 +186,7 @@ weka fs create tenant1 default 50GiB \
   --kms-secret-id "$SECRET_ID"
 
 # Confirm it is encrypted
-weka fs --output name,group,availableTotal,status,encrypted --filter name=tenant1
+weka fs --output name,group,availableTotal,status,encrypted,kmsKey,kmsRole --filter name=tenant1
 ```
 
 ### Step 4 — Rewrap: rotate the AppRole secret_id
