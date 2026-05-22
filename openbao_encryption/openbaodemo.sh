@@ -18,6 +18,19 @@ NC='\033[0m'
 KEYNAME="weka-key"
 WORK_DIR="$HOME/openbao-dir"   # log + pid files only; binary goes to /usr/bin/bao
 
+# Fallback version list used when api.github.com is unreachable.
+# Update periodically or just let the live API take over when accessible.
+FALLBACK_VERSIONS="2.5.4
+2.5.3
+2.5.2
+2.5.1
+2.5.0
+2.4.3
+2.4.2
+2.4.1
+2.4.0
+2.3.1"
+
 print_header() {
     echo ""
     echo -e "${BOLD}${CYAN}================================================================${NC}"
@@ -108,10 +121,8 @@ select_version() {
     versions=$(get_openbao_versions)
 
     if [[ -z "$versions" ]]; then
-        print_warn "Could not fetch version list from GitHub — enter a version manually."
-        read -p "  Enter OpenBao version (e.g. 2.5.4): " BAO_VERSION
-        [[ -z "$BAO_VERSION" ]] && { print_error "No version specified."; exit 1; }
-        return
+        print_warn "Could not reach GitHub API — showing known recent versions."
+        versions="$FALLBACK_VERSIONS"
     fi
 
     echo ""

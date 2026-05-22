@@ -12,6 +12,18 @@ NC='\033[0m'
 KEYNAME="weka-key"
 INSTALL_DIR="$HOME/vault-dir"
 
+# Fallback version list used when the HashiCorp releases API is unreachable.
+FALLBACK_VERSIONS="1.19.3
+1.19.2
+1.19.1
+1.19.0
+1.18.5
+1.18.4
+1.18.3
+1.18.2
+1.18.1
+1.18.0"
+
 print_header() {
     echo ""
     echo -e "${BOLD}${CYAN}================================================================${NC}"
@@ -84,10 +96,8 @@ select_version() {
     versions=$(get_vault_versions)
 
     if [[ -z "$versions" ]]; then
-        print_warn "Could not fetch version list — enter a version manually."
-        read -p "  Enter Vault version (e.g. 1.19.0): " VAULT_VERSION
-        [[ -z "$VAULT_VERSION" ]] && VAULT_VERSION="1.19.0"
-        return
+        print_warn "Could not reach HashiCorp releases API — showing known recent versions."
+        versions="$FALLBACK_VERSIONS"
     fi
 
     echo ""
