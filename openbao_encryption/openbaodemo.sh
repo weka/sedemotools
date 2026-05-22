@@ -1,8 +1,12 @@
 #!/bin/bash
-# WEKA OpenBao encryption demo — downloads OpenBao, starts it in dev mode, and
-# optionally wires WEKA's KMS to it.  OpenBao is an open-source, community-driven
-# fork of HashiCorp Vault (https://openbao.org) and is API-compatible with WEKA's
-# Vault KMS integration.  Run as root on a WEKA client node.
+# WEKA OpenBao encryption demo — installs OpenBao via the native package manager,
+# starts it in dev mode, and optionally wires WEKA's KMS to it.
+#
+# OpenBao is an open-source fork of HashiCorp Vault (https://openbao.org) and is
+# API-compatible with WEKA's Vault KMS integration.
+# Run as root on a WEKA client node.
+#
+# Supported platforms: Ubuntu/Debian (deb), RHEL/CentOS/Rocky (rpm)
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -12,8 +16,7 @@ BOLD='\033[1m'
 NC='\033[0m'
 
 KEYNAME="weka-key"
-INSTALL_DIR="$HOME/openbao-dir"
-BINARY="$INSTALL_DIR/bao"
+WORK_DIR="$HOME/openbao-dir"   # log + pid files only; binary goes to /usr/bin/bao
 
 print_header() {
     echo ""
@@ -28,7 +31,21 @@ print_error()   { echo -e "${RED}  ✗ $1${NC}"; }
 print_info()    { echo -e "  $1"; }
 print_divider() { echo -e "${CYAN}------------------------------------------------------------------${NC}"; }
 
-# Fetch the latest stable OpenBao releases from GitHub.
+# Detect package manager
+detect_pkg_manager() {
+    if command -v apt >/dev/null 2>&1; then
+        echo "apt"
+    elif command -v dnf >/dev/null 2>&1; then
+        echo "dnf"
+    elif command -v yum >/dev/null 2>&1; then
+        echo "yum"
+    else
+        echo ""
+    fi
+}
+
+# Fetch the latest stable OpenBao releases from GitHub, filtered to those that
+# have a .deb or .rpm asset (i.e. a real release, not a pre-release).
 get_openbao_versions() {
     if command -v python3 >/dev/null 2>&1; then
         python3 - <<'PY' 2>/dev/null
@@ -44,7 +61,9 @@ try:
         if r.get('prerelease') or r.get('draft'):
             continue
         v = r.get('tag_name', '').lstrip('v')
-        if v:
+        # Only list releases that actually have a .deb or .rpm asset
+        names = [a['name'] for a in r.get('assets', [])]
+        if any(n.endswith('.deb') or n.endswith('.rpm') for n in names) and v:
             seen.append(v)
         if len(seen) >= 10:
             break
@@ -67,7 +86,7 @@ select_version() {
 
     if [[ -z "$versions" ]]; then
         print_warn "Could not fetch version list from GitHub — enter a version manually."
-        read -p "  Enter OpenBao version (e.g. 2.2.0): " BAO_VERSION
+        read -p "  Enter OpenBao version (e.g. 2.5.4): " BAO_VERSION
         [[ -z "$BAO_VERSION" ]] && { print_error "No version specified."; exit 1; }
         return
     fi
@@ -97,17 +116,40 @@ select_version() {
 
 install_openbao() {
     local version="$1"
-    local url="https://github.com/openbao/openbao/releases/download/v${version}/bao_${version}_linux_amd64.zip"
-    mkdir -p "$INSTALL_DIR"
-    print_info "Downloading OpenBao ${version}..."
-    if ! curl -# -L -o "$INSTALL_DIR/bao.zip" "$url"; then
-        print_error "Download failed — check the version number and internet connectivity."
+    local pkg_mgr="$2"
+    local tmpfile url
+
+    mkdir -p "$WORK_DIR"
+
+    if [[ "$pkg_mgr" == "apt" ]]; then
+        url="https://github.com/openbao/openbao/releases/download/v${version}/openbao_${version}_linux_amd64.deb"
+        tmpfile="/tmp/openbao_${version}_linux_amd64.deb"
+        print_info "Downloading OpenBao ${version} (deb)..."
+        if ! curl -# -L -o "$tmpfile" "$url"; then
+            print_error "Download failed — check the version number and connectivity."
+            exit 1
+        fi
+        if ! dpkg -i "$tmpfile" >/dev/null 2>&1; then
+            apt-get install -f -y >/dev/null 2>&1
+        fi
+    else
+        url="https://github.com/openbao/openbao/releases/download/v${version}/openbao_${version}_linux_amd64.rpm"
+        tmpfile="/tmp/openbao_${version}_linux_amd64.rpm"
+        print_info "Downloading OpenBao ${version} (rpm)..."
+        if ! curl -# -L -o "$tmpfile" "$url"; then
+            print_error "Download failed — check the version number and connectivity."
+            exit 1
+        fi
+        $pkg_mgr install -y "$tmpfile" >/dev/null 2>&1
+    fi
+
+    rm -f "$tmpfile"
+
+    if ! command -v bao >/dev/null 2>&1; then
+        print_error "Installation failed — 'bao' not found in PATH after install."
         exit 1
     fi
-    unzip -o -q -d "$INSTALL_DIR" "$INSTALL_DIR/bao.zip"
-    chmod +x "$BINARY"
-    rm -f "$INSTALL_DIR/bao.zip"
-    print_ok "OpenBao ${version} installed to ${INSTALL_DIR}"
+    print_ok "OpenBao ${version} installed ($(command -v bao))"
 }
 
 # ─── Main ────────────────────────────────────────────────────────────────────
@@ -118,16 +160,22 @@ echo -e "  ${CYAN}OpenBao is an open-source fork of HashiCorp Vault, fully"
 echo -e "  compatible with WEKA's Vault KMS integration.${NC}"
 echo ""
 
-# Ensure required tools are present
-if command -v apt >/dev/null 2>&1; then
-    apt install -y unzip curl >/dev/null 2>&1
+# Check for supported package manager
+PKG_MGR=$(detect_pkg_manager)
+if [[ -z "$PKG_MGR" ]]; then
+    print_error "No supported package manager found (requires apt, dnf, or yum)."
+    exit 1
 fi
-for cmd in curl unzip; do
-    if ! command -v "$cmd" >/dev/null 2>&1; then
-        print_error "Required tool not found: $cmd"
-        exit 1
-    fi
-done
+print_ok "Package manager: ${PKG_MGR}"
+
+# Ensure curl is available
+if command -v apt >/dev/null 2>&1; then
+    apt-get install -y curl >/dev/null 2>&1
+fi
+if ! command -v curl >/dev/null 2>&1; then
+    print_error "curl is required but not found."
+    exit 1
+fi
 
 # Pick an OpenBao version
 select_version
@@ -148,17 +196,17 @@ if pgrep -x "bao" >/dev/null; then
     fi
 fi
 
-# Install if missing or a different version
-if [ -x "$BINARY" ]; then
-    CURRENT_VERSION=$("$BINARY" version 2>/dev/null | awk 'NR==1 {print $2}' | sed 's/^v//')
-    if [ "$CURRENT_VERSION" = "$BAO_VERSION" ]; then
-        print_ok "OpenBao ${BAO_VERSION} already installed — skipping download."
+# Install or upgrade
+if command -v bao >/dev/null 2>&1; then
+    CURRENT_VERSION=$(bao version 2>/dev/null | awk 'NR==1 {print $2}' | sed 's/^v//')
+    if [[ "$CURRENT_VERSION" == "$BAO_VERSION" ]]; then
+        print_ok "OpenBao ${BAO_VERSION} is already installed — skipping download."
     else
-        print_info "Replacing version ${CURRENT_VERSION} with ${BAO_VERSION}..."
-        install_openbao "$BAO_VERSION"
+        print_info "Upgrading from ${CURRENT_VERSION} to ${BAO_VERSION}..."
+        install_openbao "$BAO_VERSION" "$PKG_MGR"
     fi
 else
-    install_openbao "$BAO_VERSION"
+    install_openbao "$BAO_VERSION" "$PKG_MGR"
 fi
 
 # Resolve the node's first routable IP
@@ -171,32 +219,34 @@ fi
 
 # OpenBao exposes the same HTTP API as Vault; WEKA uses the VAULT_ADDR env var.
 export VAULT_ADDR="http://$IPADDR:8200"
+export VAULT_TOKEN="root"   # dev mode always uses "root" as the root token
 
+mkdir -p "$WORK_DIR"
 print_info "Starting OpenBao in dev mode at ${VAULT_ADDR}..."
-"$BINARY" server -dev -dev-listen-address="$IPADDR:8200" \
-    > "$INSTALL_DIR/bao.log" 2>&1 &
+bao server -dev -dev-listen-address="$IPADDR:8200" \
+    > "$WORK_DIR/bao.log" 2>&1 &
 BAO_PID=$!
-echo "$BAO_PID" > "$INSTALL_DIR/bao.pid"
+echo "$BAO_PID" > "$WORK_DIR/bao.pid"
 sleep 2
 
 if ! kill -0 "$BAO_PID" 2>/dev/null; then
-    print_error "OpenBao failed to start. See: ${INSTALL_DIR}/bao.log"
+    print_error "OpenBao failed to start. See: ${WORK_DIR}/bao.log"
     exit 1
 fi
-print_ok "OpenBao running (PID: ${BAO_PID}  log: ${INSTALL_DIR}/bao.log)"
+print_ok "OpenBao running (PID: ${BAO_PID}  log: ${WORK_DIR}/bao.log)"
 
 echo ""
 print_divider
-"$BINARY" status
+bao status
 print_divider
 echo ""
 
 # Configure OpenBao transit + AppRole for WEKA (same API as Vault)
-"$BINARY" secrets enable transit          >/dev/null 2>&1
-"$BINARY" auth enable approle             >/dev/null 2>&1
-"$BINARY" write -f transit/keys/weka-key >/dev/null
+bao secrets enable transit          >/dev/null 2>&1
+bao auth enable approle             >/dev/null 2>&1
+bao write -f transit/keys/weka-key >/dev/null
 
-cat > "$INSTALL_DIR/weka_policy.hcl" <<'HCL'
+cat > "$WORK_DIR/weka_policy.hcl" <<'HCL'
 path "transit/+/weka-key" {
   capabilities = ["read", "create", "update"]
 }
@@ -204,13 +254,13 @@ path "transit/keys/weka-key" {
   capabilities = ["read"]
 }
 HCL
-"$BINARY" policy write weka "$INSTALL_DIR/weka_policy.hcl" >/dev/null
+bao policy write weka "$WORK_DIR/weka_policy.hcl" >/dev/null
 
-"$BINARY" write auth/approle/role/weka \
+bao write auth/approle/role/weka \
     token_policies="weka" token_ttl=1h token_max_ttl=4h >/dev/null
 
-ROLE_ID=$("$BINARY" read   -field=role_id   auth/approle/role/weka/role-id)
-SECRET_ID=$("$BINARY" write -f -field=secret_id auth/approle/role/weka/secret-id)
+ROLE_ID=$(bao read   -field=role_id   auth/approle/role/weka/role-id)
+SECRET_ID=$(bao write -f -field=secret_id auth/approle/role/weka/secret-id)
 
 print_divider
 echo -e "${BOLD}  WEKA KMS Configuration Values${NC}"
@@ -262,10 +312,10 @@ if [[ "$CONFIGURE_WEKA" =~ ^[Yy]$ ]]; then
     print_divider
 
     # Create a separate role/secret for filesystem-level encryption
-    "$BINARY" write -f auth/approle/role/weka-fs-role \
+    bao write -f auth/approle/role/weka-fs-role \
         token_policies="weka" token_ttl=20m >/dev/null
-    FS_ROLE_ID=$("$BINARY" read   -field=role_id   auth/approle/role/weka-fs-role/role-id)
-    FS_SECRET_ID=$("$BINARY" write -f -field=secret_id auth/approle/role/weka-fs-role/secret-id)
+    FS_ROLE_ID=$(bao read   -field=role_id   auth/approle/role/weka-fs-role/role-id)
+    FS_SECRET_ID=$(bao write -f -field=secret_id auth/approle/role/weka-fs-role/secret-id)
 
     echo ""
     print_ok "KMS configured — ready to create encrypted filesystems!"
@@ -290,5 +340,5 @@ else
 fi
 
 echo ""
-print_ok "Done.  OpenBao log: ${INSTALL_DIR}/bao.log"
+print_ok "Done.  OpenBao log: ${WORK_DIR}/bao.log"
 echo ""

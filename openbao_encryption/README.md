@@ -104,7 +104,8 @@ test-encrypt     default  1.07 GB          READY   True
 |---|---|---|
 | Licence | BUSL (source-available) | MPL 2.0 (open-source) |
 | Binary name | `vault` | `bao` |
-| Install directory (this script) | `~/vault-dir` | `~/openbao-dir` |
+| Install method | zip → `~/vault-dir/vault` | deb/rpm → `/usr/bin/bao` |
+| Log/work directory | `~/vault-dir/` | `~/openbao-dir/` |
 | Download source | releases.hashicorp.com | github.com/openbao/openbao |
 | WEKA `kms set` command | `set vault …` | `set vault …` (same) |
 | API compatibility with WEKA | ✓ | ✓ |
@@ -120,9 +121,15 @@ weka fs delete test-encrypt -f
 # 2. Remove the KMS configuration
 weka security kms reset
 
-# 3. Stop OpenBao and remove its installation directory
+# 3. Stop the running OpenBao dev server
 pkill -x bao
 rm -rf ~/openbao-dir
+
+# 4. Remove the OpenBao package
+# Ubuntu/Debian:
+apt remove openbao -y
+# RHEL/CentOS/Rocky:
+dnf remove openbao -y
 ```
 
 ---
