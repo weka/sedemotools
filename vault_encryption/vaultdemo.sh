@@ -25,6 +25,23 @@ print_error()   { echo -e "${RED}  ✗ $1${NC}"; }
 print_info()    { echo -e "  $1"; }
 print_divider() { echo -e "${CYAN}------------------------------------------------------------------${NC}"; }
 
+# Open port 8200 so WEKA backend nodes can reach the dev server.
+open_firewall_port() {
+    local port=8200
+    if command -v firewall-cmd >/dev/null 2>&1 && firewall-cmd --state >/dev/null 2>&1; then
+        print_info "Opening port ${port}/tcp in firewalld..."
+        firewall-cmd --add-port="${port}/tcp" --permanent >/dev/null 2>&1
+        firewall-cmd --reload >/dev/null 2>&1
+        print_ok "Port ${port}/tcp opened in firewalld"
+    elif command -v iptables >/dev/null 2>&1; then
+        if ! iptables -C INPUT -p tcp --dport "$port" -j ACCEPT >/dev/null 2>&1; then
+            print_info "Adding iptables rule for port ${port}/tcp..."
+            iptables -I INPUT -p tcp --dport "$port" -j ACCEPT
+            print_ok "Port ${port}/tcp opened in iptables"
+        fi
+    fi
+}
+
 # Fetch the latest stable Vault OSS versions from the HashiCorp releases API.
 # Uses curl for the HTTP request so proxy/firewall settings are handled
 # consistently with the binary download.
@@ -192,6 +209,7 @@ if [[ "$READY" -eq 0 ]] || ! kill -0 "$VAULT_PID" 2>/dev/null; then
     exit 1
 fi
 print_ok "Vault running (PID: ${VAULT_PID}  log: ${INSTALL_DIR}/vault.log)"
+open_firewall_port
 
 echo ""
 print_divider
@@ -259,7 +277,11 @@ if [[ "$CONFIGURE_WEKA" =~ ^[Yy]$ ]]; then
     fi
 
     print_info "Configuring WEKA KMS..."
-    weka security kms set vault "$VAULT_ADDR" "$KEYNAME" --role-id "$ROLE_ID" --secret-id "$SECRET_ID"
+    if ! weka security kms set vault "$VAULT_ADDR" "$KEYNAME" --role-id "$ROLE_ID" --secret-id "$SECRET_ID"; then
+        print_error "KMS configuration failed — check that WEKA backend nodes can reach ${VAULT_ADDR}"
+        print_info "Common cause: firewall on this host blocking inbound port 8200 from WEKA nodes."
+        exit 1
+    fi
 
     print_divider
     echo -e "${BOLD}  WEKA KMS Status${NC}"
