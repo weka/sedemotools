@@ -118,3 +118,10 @@ The READMEs also include a **tenant AppRole example** showing how to create isol
 - Vault and OpenBao demos run in **dev mode** — data is in memory only and lost on restart.  Do not use in production.
 - The `wekahome/.env` file stores your get.weka.io token locally.  It is excluded from git via `.gitignore`.
 - Each demo folder has its own README with a full walkthrough, teardown instructions, and a troubleshooting table.
+
+---
+
+## License
+
+Copyright 2025 WEKA, Inc.  
+Licensed under the [Apache License, Version 2.0](LICENSE).
