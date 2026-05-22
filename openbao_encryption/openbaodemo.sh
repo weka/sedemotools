@@ -46,35 +46,41 @@ detect_pkg_manager() {
 
 # Fetch the latest stable OpenBao releases from GitHub, filtered to those that
 # have a .deb or .rpm asset (i.e. a real release, not a pre-release).
+# Uses curl for the HTTP request (same tool that downloads the package) so that
+# proxy settings and firewall rules are handled consistently.
 get_openbao_versions() {
+    local api_response
+    api_response=$(curl -sf --max-time 8 \
+        -H "User-Agent: weka-sedemotools" \
+        "https://api.github.com/repos/openbao/openbao/releases?per_page=20" 2>/dev/null)
+
+    [[ -z "$api_response" ]] && return 1
+
     if command -v python3 >/dev/null 2>&1; then
-        python3 - <<'PY' 2>/dev/null
-import urllib.request, json, sys
-try:
-    req = urllib.request.Request(
-        'https://api.github.com/repos/openbao/openbao/releases?per_page=20',
-        headers={'User-Agent': 'weka-sedemotools'}
-    )
-    data = json.loads(urllib.request.urlopen(req, timeout=8).read())
-    seen = []
-    for r in data:
-        if r.get('prerelease') or r.get('draft'):
-            continue
-        v = r.get('tag_name', '').lstrip('v')
-        # Only list releases that actually have a .deb or .rpm asset
-        names = [a['name'] for a in r.get('assets', [])]
-        if any(n.endswith('.deb') or n.endswith('.rpm') for n in names) and v:
-            seen.append(v)
-        if len(seen) >= 10:
-            break
-    print('\n'.join(seen))
-except Exception:
-    sys.exit(1)
+        echo "$api_response" | python3 - <<'PY' 2>/dev/null
+import json, sys
+data = json.load(sys.stdin)
+seen = []
+for r in data:
+    if r.get('prerelease') or r.get('draft'):
+        continue
+    v = r.get('tag_name', '').lstrip('v')
+    names = [a['name'] for a in r.get('assets', [])]
+    if any(n.endswith('.deb') or n.endswith('.rpm') for n in names) and v:
+        seen.append(v)
+    if len(seen) >= 10:
+        break
+print('\n'.join(seen))
 PY
     elif command -v jq >/dev/null 2>&1; then
-        curl -sf -H "User-Agent: weka-sedemotools" \
-            "https://api.github.com/repos/openbao/openbao/releases?per_page=20" 2>/dev/null \
+        echo "$api_response" \
             | jq -r '.[] | select(.prerelease == false and .draft == false) | .tag_name | ltrimstr("v")' 2>/dev/null \
+            | head -10
+    else
+        # grep/sed fallback — no jq or python3 available
+        echo "$api_response" \
+            | grep -o '"tag_name":"v[^"]*"' \
+            | sed 's/"tag_name":"v//;s/"//' \
             | head -10
     fi
 }

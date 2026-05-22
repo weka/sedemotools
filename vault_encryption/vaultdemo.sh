@@ -26,27 +26,37 @@ print_info()    { echo -e "  $1"; }
 print_divider() { echo -e "${CYAN}------------------------------------------------------------------${NC}"; }
 
 # Fetch the latest stable Vault OSS versions from the HashiCorp releases API.
+# Uses curl for the HTTP request so proxy/firewall settings are handled
+# consistently with the binary download.
 get_vault_versions() {
+    local api_response
+    api_response=$(curl -sf --max-time 8 \
+        "https://api.releases.hashicorp.com/v1/releases/vault?license_class=oss&limit=20" 2>/dev/null)
+
+    [[ -z "$api_response" ]] && return 1
+
     if command -v python3 >/dev/null 2>&1; then
-        python3 - <<'PY' 2>/dev/null
-import urllib.request, json, sys
-try:
-    url = 'https://api.releases.hashicorp.com/v1/releases/vault?license_class=oss&limit=20'
-    data = json.loads(urllib.request.urlopen(url, timeout=8).read())
-    seen = []
-    for r in data:
-        v = r.get('version', '')
-        if not any(x in v for x in ['rc', 'beta', 'alpha', '+ent']) and v:
-            seen.append(v)
-        if len(seen) >= 10:
-            break
-    print('\n'.join(seen))
-except Exception:
-    sys.exit(1)
+        echo "$api_response" | python3 - <<'PY' 2>/dev/null
+import json, sys
+data = json.load(sys.stdin)
+seen = []
+for r in data:
+    v = r.get('version', '')
+    if not any(x in v for x in ['rc', 'beta', 'alpha', '+ent']) and v:
+        seen.append(v)
+    if len(seen) >= 10:
+        break
+print('\n'.join(seen))
 PY
     elif command -v jq >/dev/null 2>&1; then
-        curl -sf "https://api.releases.hashicorp.com/v1/releases/vault?license_class=oss&limit=20" 2>/dev/null \
+        echo "$api_response" \
             | jq -r '.[] | select(.version | test("rc|beta|alpha|\\+ent") | not) | .version' 2>/dev/null \
+            | head -10
+    else
+        echo "$api_response" \
+            | grep -o '"version":"[^"]*"' \
+            | sed 's/"version":"//;s/"//' \
+            | grep -v -E 'rc|beta|alpha|\+ent' \
             | head -10
     fi
 }
