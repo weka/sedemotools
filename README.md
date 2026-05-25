@@ -8,6 +8,7 @@ A collection of scripts for running hands-on WEKA demos and proofs-of-concept on
 
 | Folder | Demo | What it shows |
 |--------|------|---------------|
+| [`catalog/`](catalog/) | Catalog demo file generator | Generates a realistic multi-department file catalog on a WEKA filesystem; realistic file types, nested folders, per-dept OS users/groups |
 | [`vault_encryption/`](vault_encryption/) | HashiCorp Vault KMS encryption | WEKA filesystem encryption backed by a Vault transit key; AppRole auth; per-tenant isolated keys |
 | [`openbao_encryption/`](openbao_encryption/) | OpenBao KMS encryption | Same as above using OpenBao — the open-source, MPL-licensed fork of Vault |
 | [`csi/`](csi/) | WEKA CSI driver | Dynamic PVC provisioning (directory- and filesystem-backed) on K3s/minikube; static PVs |
@@ -56,6 +57,9 @@ cd sedemotools
 Navigate to the demo folder and follow its README.  Each script is interactive — it will prompt you for any required inputs.
 
 ```bash
+# Catalog file generator
+cd catalog && sudo ./generate_catalog_demo.sh /mnt/weka/catalog_demo
+
 # HashiCorp Vault encryption
 cd vault_encryption && sudo ./vaultdemo.sh
 
@@ -72,6 +76,18 @@ cd wekahome && sudo ./wekahomesetup.sh
 ---
 
 ## Demo summaries
+
+### Catalog file generator
+
+- Prompts for (or accepts as a CLI argument) the target directory on a WEKA filesystem
+- Validates the path sits on a mounted `wekafs` before writing anything
+- Creates 50 department subfolders across 10 departments, plus randomly nested subdirectories
+- Generates thousands of realistically-named files across 10 common types (`.pdf`, `.xls`, `.log`, etc.) with varied sizes
+- Creates one OS user and group per department and sets ownership across the tree
+
+→ [Catalog README](catalog/README.md)
+
+---
 
 ### Vault & OpenBao encryption
 
