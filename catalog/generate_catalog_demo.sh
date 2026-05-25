@@ -81,7 +81,6 @@ if ! check_wekafs_mount "$BASE_DIR"; then
   echo "ERROR: '$BASE_DIR' does not appear to be on a mounted WEKA filesystem."
   echo ""
   echo "Currently mounted WEKA filesystems:"
-  local weka_mounts
   weka_mounts=$(mount -t wekafs 2>/dev/null)
   if [ -n "$weka_mounts" ]; then
     echo "$weka_mounts" | awk '{printf "  %s → %s\n", $1, $3}'
