@@ -60,14 +60,14 @@ Navigate to the demo folder and follow its README.  Each script is interactive â
 # Catalog file generator
 cd catalog && sudo ./generate_catalog_demo.sh /mnt/weka/catalog_demo
 
-# HashiCorp Vault encryption
-cd vault_encryption && sudo ./vaultdemo.sh
+# CSI driver
+cd csi && sudo ./csidemosetup.sh
 
 # OpenBao encryption
 cd openbao_encryption && sudo ./openbaodemo.sh
 
-# CSI driver
-cd csi && sudo ./csidemosetup.sh
+# HashiCorp Vault encryption
+cd vault_encryption && sudo ./vaultdemo.sh
 
 # Local WEKA Home
 cd wekahome && sudo ./wekahomesetup.sh
