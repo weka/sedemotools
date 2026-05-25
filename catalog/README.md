@@ -28,12 +28,16 @@ Populates a WEKA filesystem with a deep, realistic directory structure across 10
 ### Usage
 
 ```bash
+# Pass the directory as an argument (recommended)
+sudo ./generate_catalog_demo.sh /mnt/weka/catalog_demo
+
+# Or run interactively and enter the path when prompted
 sudo ./generate_catalog_demo.sh
 ```
 
 The script will:
 
-1. Prompt you for the target directory (e.g. `/mnt/weka/catalog_demo`)
+1. Use the directory argument if provided, otherwise prompt for one
 2. Verify the path sits on a mounted WEKA filesystem (`mount -t wekafs`) — exits with an error if it does not
 3. Create department users and groups
 4. Build the full folder hierarchy and generate files

@@ -23,17 +23,27 @@ echo "  WEKA Catalog Demo File Generator"
 echo "============================================"
 echo ""
 
-# Prompt for target directory
-read -rp "Enter the target directory for demo files (must be on a mounted WEKA filesystem): " BASE_DIR
+# Accept directory as argument or prompt interactively
+if [ -n "$1" ]; then
+  BASE_DIR="$1"
+else
+  read -rp "Enter the target directory for demo files (must be on a mounted WEKA filesystem): " BASE_DIR
+fi
 
 if [ -z "$BASE_DIR" ]; then
-  echo "ERROR: No directory specified. Exiting."
+  echo "ERROR: No directory specified."
+  echo "Usage: sudo $0 <target_directory>"
   exit 1
 fi
 
-# Resolve to absolute path and strip trailing slash
+# Resolve to absolute path; strip trailing slash but preserve bare '/'
 BASE_DIR="$(realpath -m "$BASE_DIR" 2>/dev/null || echo "$BASE_DIR")"
-BASE_DIR="${BASE_DIR%/}"
+[ "$BASE_DIR" != "/" ] && BASE_DIR="${BASE_DIR%/}"
+
+if [ "$BASE_DIR" = "/" ]; then
+  echo "ERROR: Refusing to write demo files to the filesystem root."
+  exit 1
+fi
 
 # Verify the path sits on a mounted wekafs filesystem
 # Walk up from BASE_DIR until we find a matching mount point
@@ -71,14 +81,18 @@ if ! check_wekafs_mount "$BASE_DIR"; then
   echo "ERROR: '$BASE_DIR' does not appear to be on a mounted WEKA filesystem."
   echo ""
   echo "Currently mounted WEKA filesystems:"
-  if mount -t wekafs 2>/dev/null | grep -q .; then
-    mount -t wekafs | awk '{printf "  %s → %s\n", $1, $3}'
+  local weka_mounts
+  weka_mounts=$(mount -t wekafs 2>/dev/null)
+  if [ -n "$weka_mounts" ]; then
+    echo "$weka_mounts" | awk '{printf "  %s → %s\n", $1, $3}'
+    echo ""
+    echo "Please use a path under one of the mounted WEKA filesystems listed above."
   else
     echo "  (none found)"
+    echo ""
+    echo "Mount a WEKA filesystem first, e.g.:"
+    echo "  mount -t wekafs <cluster>/<fs> /mnt/weka"
   fi
-  echo ""
-  echo "Mount a WEKA filesystem first, e.g.:"
-  echo "  mount -t wekafs <cluster>/<fs> /mnt/weka"
   exit 1
 fi
 
