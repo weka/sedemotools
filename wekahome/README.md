@@ -101,10 +101,40 @@ Retrieves the auto-generated admin and Grafana passwords from Kubernetes secrets
 
 ## After installation
 
+Make sure your WEKA client is authenticated:
+```bash
+weka status
+```
+If necesssary, login:
+```bash
+weka user login admin
+```
+
 Run the following on a WEKA client node to point the cluster at your LWH instance:
 
 ```bash
 weka cloud enable --cloud-url http://<LOCAL_IP>
+```
+Validate traffic is flowing from backends to local WEKA home:
+```bash
+weka cloud status
+```
+Example of good connection is:
+```bash
+[root@ip-10-0-66-120 wekahome]# weka cloud status
+
+                 url: http://10.0.66.120
+        registration: registered
+              status: healthy
+        stats upload: enabled
+
+HOST        IS HEALTHY
+HostId<0>   READY
+HostId<1>   READY
+HostId<2>   READY
+HostId<3>   READY
+HostId<4>   READY
+HostId<5>   READY
 ```
 
 Then open `http://<LOCAL_IP>` in a browser.  Log in with username `admin` and the password printed by the script.
@@ -122,6 +152,13 @@ Then open `http://<LOCAL_IP>` in a browser.  Log in with username `admin` and th
 | Browser shows cert warning | Expected with a self-signed cert — click through, or use `http://` instead of `https://` |
 | Credentials show `<run kubectl...>` | Run `kubectl get secret -n home-weka-io wekahome-admin-credentials -o jsonpath='{.data.adminPassword}' \| base64 -d` manually |
 | WEKA not reporting to LWH | Check firewall — WEKA backend nodes need port 80/443 open to the LWH host |
+
+If using https connection you may get this error when using **weka cloud enable**:
+```
+[root@ip-10-0-66-120 wekahome]# weka cloud enable --cloud-url https://10.0.66.120
+error: Failed registering the cluster in the cloud: curl: (60) SSL certificate problem: self-signed certificate
+```
+This error is caused by the LWH using a self-signed certificate.   You need to either install a signed cert or set a debug override to use insecure WEKA cloud HTTPS call.
 
 ---
 
