@@ -9,9 +9,9 @@ A collection of scripts for running hands-on WEKA demos and proofs-of-concept on
 | Folder | Demo | What it shows |
 |--------|------|---------------|
 | [`catalog/`](catalog/) | Catalog demo file generator | Generates a realistic multi-department file catalog on a WEKA filesystem; realistic file types, nested folders, per-dept OS users/groups |
-| [`vault_encryption/`](vault_encryption/) | HashiCorp Vault KMS encryption | WEKA filesystem encryption backed by a Vault transit key; AppRole auth; per-tenant isolated keys |
-| [`openbao_encryption/`](openbao_encryption/) | OpenBao KMS encryption | Same as above using OpenBao — the open-source, MPL-licensed fork of Vault |
 | [`csi/`](csi/) | WEKA CSI driver | Dynamic PVC provisioning (directory- and filesystem-backed) on K3s/minikube; static PVs |
+| [`openbao_encryption/`](openbao_encryption/) | OpenBao KMS encryption | Same as above using OpenBao — the open-source, MPL-licensed fork of Vault |
+| [`vault_encryption/`](vault_encryption/) | HashiCorp Vault KMS encryption | WEKA filesystem encryption backed by a Vault transit key; AppRole auth; per-tenant isolated keys |
 | [`wekahome/`](wekahome/) | Local WEKA Home | Self-hosted WEKA monitoring and management platform; version picker; auto TLS setup |
 
 ---
