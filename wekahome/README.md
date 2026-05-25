@@ -161,6 +161,7 @@ This error is caused by the LWH using a self-signed certificate.   You need to e
 | Browser shows cert warning | Expected with a self-signed cert — click through, or use `http://` instead of `https://` |
 | Credentials show `<run kubectl...>` | Run `kubectl get secret -n home-weka-io wekahome-admin-credentials -o jsonpath='{.data.adminPassword}' \| base64 -d` manually |
 | WEKA not reporting to LWH | Check firewall — WEKA backend nodes need port 80/443 open to the LWH host |
+| https connection self-signed certificate error | Set a debug to allow this or use http |
 
 ---
 
