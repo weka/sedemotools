@@ -97,6 +97,8 @@ Retrieves the auto-generated admin and Grafana passwords from Kubernetes secrets
 ------------------------------------------------------------------
 ```
 
+Note that https needs either a signed certificate or a debug override, so use use http for demo purposes.
+
 ---
 
 ## After installation
@@ -141,6 +143,13 @@ Then open `http://<LOCAL_IP>` in a browser.  Log in with username `admin` and th
 
 > If the VM is in a cloud environment, make sure port 80 and/or 443 is open in the security group / firewall so your browser (and WEKA backend nodes) can reach it.
 
+If using https connection (rather then http) you may get this error when using **weka cloud enable**:
+```
+[root@ip-10-0-66-120 wekahome]# weka cloud enable --cloud-url https://10.0.66.120
+error: Failed registering the cluster in the cloud: curl: (60) SSL certificate problem: self-signed certificate
+```
+This error is caused by the LWH using a self-signed certificate.   You need to either install a signed cert or set a debug override to use insecure WEKA cloud HTTPS call.
+
 ---
 
 ## Troubleshooting
@@ -152,13 +161,6 @@ Then open `http://<LOCAL_IP>` in a browser.  Log in with username `admin` and th
 | Browser shows cert warning | Expected with a self-signed cert — click through, or use `http://` instead of `https://` |
 | Credentials show `<run kubectl...>` | Run `kubectl get secret -n home-weka-io wekahome-admin-credentials -o jsonpath='{.data.adminPassword}' \| base64 -d` manually |
 | WEKA not reporting to LWH | Check firewall — WEKA backend nodes need port 80/443 open to the LWH host |
-
-If using https connection you may get this error when using **weka cloud enable**:
-```
-[root@ip-10-0-66-120 wekahome]# weka cloud enable --cloud-url https://10.0.66.120
-error: Failed registering the cluster in the cloud: curl: (60) SSL certificate problem: self-signed certificate
-```
-This error is caused by the LWH using a self-signed certificate.   You need to either install a signed cert or set a debug override to use insecure WEKA cloud HTTPS call.
 
 ---
 
